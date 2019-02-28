@@ -19,10 +19,10 @@ void loop() {
 
     z = x-y;
 
-    //Serial.print(x);
-    //Serial.print("\t");
-    //Serial.print(y);
-    //Serial.print("\t");
+    Serial.print(x);
+    Serial.print("\t");
+    Serial.print(y);
+    Serial.print("\t");
     Serial.print(z);
     Serial.println();
 }
