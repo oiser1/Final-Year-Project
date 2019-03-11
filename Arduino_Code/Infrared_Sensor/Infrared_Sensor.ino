@@ -10,19 +10,19 @@ void setup() {
 
 void loop() {
     digitalWrite(IR_LED, HIGH);
-    delay(1);
+    //delay(1);
     x = analogRead(IR_Sensor);
-
+    /*
     digitalWrite(IR_LED, LOW);
     delay(1);
     y = analogRead(IR_Sensor);
 
     z = x-y;
-
+*/
     Serial.print(x);
-    Serial.print("\t");
+    /*Serial.print("\t");
     Serial.print(y);
     Serial.print("\t");
-    Serial.print(z);
+    Serial.print(z);*/
     Serial.println();
 }
