@@ -1,14 +1,3 @@
-#!/usr/bin/python
-#
-# HD44780 LCD Test Script for
-# Raspberry Pi
-#
-# Author : Matt Hawkins
-# Site   : http://www.raspberrypi-spy.co.uk
-# 
-# Date   : 03/08/2012
-#
-
 # The wiring for the LCD is as follows:
 # 1 : GND
 # 2 : 5V
@@ -94,7 +83,7 @@ def main():
   GPIO.output(LED_ON, False)
 
 def lcd_init():
-  GPIO.setmode(GPIO.BOARD)       # Use Board GPIO numbers
+  GPIO.setmode(GPIO.BOARD)     # Use Board GPIO numbers
   GPIO.setup(LCD_E, GPIO.OUT)  # E
   GPIO.setup(LCD_RS, GPIO.OUT) # RS
   GPIO.setup(LCD_D4, GPIO.OUT) # DB4
