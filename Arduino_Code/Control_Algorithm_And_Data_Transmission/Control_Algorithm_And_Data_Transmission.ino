@@ -18,6 +18,8 @@ int Right_Enable = 4;
 int Right_Forwards = 6;
 int Right_Backwards = 9;
 
+bool startFlag = true;
+
 void setup() {
   Serial.begin(9600);              //Starting serial communication
   pinMode(IR_Sensor_Whisk1, INPUT);
@@ -47,6 +49,8 @@ void loop() {
   IR_Sensor_Val1 = analogRead(IR_Sensor_Whisk1);
   Serial.print(IR_Sensor_Val1);
   Serial.print('\n');
+  Serial.print(IR_Sensor_Val2);
+  Serial.print('\n');
   //delay(1000);
 
   // Ultrasonic sensor code stuff
@@ -63,7 +67,13 @@ void loop() {
 
 
   // Control algorithm
-  forwards();
+  if (startFlag) {
+    turnRight();
+    delay(3000);
+    startFlag = false;
+  }
+
+  
 
 }
 
