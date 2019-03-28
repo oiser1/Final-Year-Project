@@ -1,11 +1,11 @@
-//#ifndef NEURAL_NETWORK_H_INCLUDED
+#ifndef NEURAL_NETWORK_H_INCLUDED
 #define NEURAL_NETWORK_H_INCLUDED
 
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
-#include <matrix>
+#include <math.h>
 
 using namespace std;
 

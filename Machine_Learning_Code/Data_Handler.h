@@ -1,4 +1,4 @@
-//#ifndef DATA_HANDLER_H_INCLUDED
+#ifndef DATA_HANDLER_H_INCLUDED
 #define DATA_HANDLER_H_INCLUDED
 
 #include <iostream>
