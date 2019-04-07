@@ -2,40 +2,57 @@
 # inside PyBluez-0.20. Check bluez.py for implementation of socket object
 
 # Imports serial, time and bluetooth libraries
-#import serial
-#import time
-
+import serial
+import time
 from bluetooth import *
+import _thread
+import csv
 #import bluetooth
-#ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port
+
+####################### Setup #########################################################
+ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port at baud rate of 9600
 
 raspPi_sock=BluetoothSocket(RFCOMM) # Opens bluetooth socket of RFCOMM protocol
 raspPi_sock.bind(("",PORT_ANY)) # Binds socket to a local address and uses any available port
-raspPi_sock.listen(1) # Starts listening for one incoming connection and will refuse any others
+raspPi_sock.listen(1) # Starts listening for 1 incoming connection and will refuse any others
 
 port = raspPi_sock.getsockname()[1] # returns port being used
 
-#uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
-
-#advertise_service( raspPi_sock, "RaspberryPi",
-#                   service_id = uuid,
-#                   service_classes = [ uuid, SERIAL_PORT_CLASS ],
-#                   profiles = [ SERIAL_PORT_PROFILE ])
-
 print ("Waiting for connection on RFCOMM channel %d" % port)
 
-myPhone_sock, myPhone_addr = raspPi_sock.accept() # Accepts a connection, returns client socket and address
+# Will sit here until a bluetooth connection is made
+# Accepts a connection, returns client socket and address
+myPhone_sock, myPhone_addr = raspPi_sock.accept()
 print ("Accepted connection from ", myPhone_addr)
+############################################################################################
 
-try:
+def phoneInstr(myPhone_sock):
     while True:
-        data = myPhone_sock.recv(8) # receives up to 8 bytes from socket, stores in data
-        if len(data) == 0: break
-        print ("received [%s]" % data) # prints data
-except IOError:
-    pass
+        phoneInstrData = myPhone_sock.recv(8) # receives up to 8 bytes from socket, stores in phoneInstrData
+        if len(phoneInstrData) != 0:
+            print (phoneInstrData) # prints data
+            ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
+        else:
+            myPhone_sock.close() # Closes phone's socket (client)
+            raspPi_sock.close() # Closes Raspberry Pi's socket (server)
+    return;
+    
+def getTrainingData():
+    while True:
+        read_serial=ser.readline() # Reads data line in from Arduino uisng RX pin
+        read_serial = read_serial.rstrip()
+        print (read_serial)
+        with open('TrainingData.csv', mode='w', newline='') as TrainingData:
+            TrainingDataWriter = csv.writer(TrainingData)
+            TrainingDataWriter.writerow(read_serial)
+    return;
 
-print ("disconnected")
+def main():
+    _thread.start_new_thread(phoneInstr, (myPhone_sock,))
+    _thread.start_new_thread(getTrainingData,())
 
-myPhone_sock.close() # Closes phone's socket (client)
-raspPi_sock.close() # Closes Raspberry Pi's socket (server)
+    while True:
+        pass
+
+if __name__== "__main__":
+  main()

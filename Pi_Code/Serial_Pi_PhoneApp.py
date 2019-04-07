@@ -1,41 +1,41 @@
-# file: rfcomm-server.py
-# auth: Albert Huang <albert@csail.mit.edu>
-# desc: simple demonstration of a server application that uses RFCOMM sockets
-#
-# $Id: rfcomm-server.py 518 2007-08-10 07:20:07Z albert $
+# Socket object documentation can be found in btmodule.c in bluez folder
+# inside PyBluez-0.20. Check bluez.py for implementation of socket object
+
+# Imports serial, time and bluetooth libraries
+#import serial
+#import time
 
 from bluetooth import *
+#import bluetooth
+#ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port
 
-server_sock=BluetoothSocket(RFCOMM)
-server_sock.bind(("",PORT_ANY))
-server_sock.listen(1)
+raspPi_sock=BluetoothSocket(RFCOMM) # Opens bluetooth socket of RFCOMM protocol
+raspPi_sock.bind(("",PORT_ANY)) # Binds socket to a local address and uses any available port
+raspPi_sock.listen(1) # Starts listening for 1 incoming connection and will refuse any others
 
-port = server_sock.getsockname()[1]
+port = raspPi_sock.getsockname()[1] # returns port being used
 
-uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
+#uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
 
-advertise_service( server_sock, "RaspberryPi",
-                   service_id = uuid,
-                   service_classes = [ uuid, SERIAL_PORT_CLASS ],
-                   profiles = [ SERIAL_PORT_PROFILE ], 
-#                   protocols = [ OBEX_UUID ] 
-                    )
-                   
+#advertise_service( raspPi_sock, "RaspberryPi",
+#                   service_id = uuid,
+#                   service_classes = [ uuid, SERIAL_PORT_CLASS ],
+#                   profiles = [ SERIAL_PORT_PROFILE ])
+
 print ("Waiting for connection on RFCOMM channel %d" % port)
 
-client_sock, client_info = server_sock.accept()
-print ("Accepted connection from ", client_info)
+myPhone_sock, myPhone_addr = raspPi_sock.accept() # Accepts a connection, returns client socket and address
+print ("Accepted connection from ", myPhone_addr)
 
 try:
     while True:
-        data = client_sock.recv(1024)
+        data = myPhone_sock.recv(8) # receives up to 8 bytes from socket, stores in data
         if len(data) == 0: break
-        print ("received [%s]" % data)
+        print ("received [%s]" % data) # prints data
 except IOError:
     pass
 
 print ("disconnected")
 
-client_sock.close()
-server_sock.close()
-print ("all done")
+myPhone_sock.close() # Closes phone's socket (client)
+raspPi_sock.close() # Closes Raspberry Pi's socket (server)
