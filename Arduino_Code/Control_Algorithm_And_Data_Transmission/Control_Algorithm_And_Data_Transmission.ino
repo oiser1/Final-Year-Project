@@ -54,7 +54,7 @@ void sendData() {
   IR_Sensor_Val1 = analogRead(IR_Sensor_Whisk1);
   IR_Sensor_Val2 = analogRead(IR_Sensor_Whisk2);
   Serial.print(IR_Sensor_Val1);
-  Serial.print(',');
+  Serial.print('\n');
   Serial.print(IR_Sensor_Val2);
   Serial.print('\n');
 }
