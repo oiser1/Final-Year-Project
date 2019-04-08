@@ -1,7 +1,7 @@
 # Socket object documentation can be found in btmodule.c in bluez folder
 # inside PyBluez-0.20. Check bluez.py for implementation of socket object
 
-# Imports serial, time and bluetooth libraries
+# Imports serial, time, _thread, csv and bluetooth libraries
 import serial
 import time
 from bluetooth import *
@@ -11,6 +11,8 @@ import csv
 
 ####################### Setup #########################################################
 ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port at baud rate of 9600
+ser.flushInput()
+ser.flushOutput()
 
 raspPi_sock=BluetoothSocket(RFCOMM) # Opens bluetooth socket of RFCOMM protocol
 raspPi_sock.bind(("",PORT_ANY)) # Binds socket to a local address and uses any available port
@@ -32,27 +34,38 @@ def phoneInstr(myPhone_sock):
         if len(phoneInstrData) != 0:
             print (phoneInstrData) # prints data
             ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
+            ser.flushOutput()
+            ser.flushInput()
         else:
             myPhone_sock.close() # Closes phone's socket (client)
             raspPi_sock.close() # Closes Raspberry Pi's socket (server)
+        #print (phoneInstrData) # prints data
+        #ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
     return;
     
 def getTrainingData():
     while True:
-        read_serial=ser.readline() # Reads data line in from Arduino uisng RX pin
-        read_serial = read_serial.rstrip()
-        print (read_serial)
-        with open('TrainingData.csv', mode='w', newline='') as TrainingData:
-            TrainingDataWriter = csv.writer(TrainingData)
-            TrainingDataWriter.writerow(read_serial)
+        read_serial1=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 1)
+        read_serial2=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 2)
+        read_serial1 = read_serial1.decode() # Decodes the received byte to string
+        read_serial2 = read_serial2.decode() # Decodes the received byte to string
+        read_serial1 = int(read_serial1) # converts from string to int
+        read_serial2 = int(read_serial2) # converts from string to int
+        print (read_serial1)
+        print (read_serial2)
+        # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
+        # to the csv file. Flushes the files buffer.
+        with open('TrainingData.csv', mode='a') as TrainingData:
+            TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            TrainingDataWriter.writerow([read_serial1,read_serial2])
+            TrainingData.flush()
     return;
 
 def main():
-    _thread.start_new_thread(phoneInstr, (myPhone_sock,))
-    _thread.start_new_thread(getTrainingData,())
-
+    _thread.start_new_thread(phoneInstr, (myPhone_sock,)) # New thread started for phoneInstr function
+    _thread.start_new_thread(getTrainingData,()) # New thread started for getTrainingData function
     while True:
-        pass
+        pass    # Used so program continuosly runs while threads are running
 
 if __name__== "__main__":
   main()
