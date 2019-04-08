@@ -2,108 +2,114 @@ int IR_Sensor_Whisk1 = A0;
 int IR_Sensor_Whisk2 = A1;
 int IR_Sensor_Val1, IR_Sensor_Val2;
 
-int IR_Sensor_FrontLeft = A3;
-int IR_Sensor_FrontRight = A4;
-int IR_Sensor_BackLeft = A5;
-int IR_Sensor_BackRight = A6;
-
-int trigPin = 11;    //Trigger
-int echoPin = 12;    //Echo
-float pulseDelay, objectDistance;
-
 int Left_Enable = 2;
 int Left_Forwards = 3;
-int Left_Backwards = 5;
+int Left_Reverse = 5;
 int Right_Enable = 4;
 int Right_Forwards = 6;
-int Right_Backwards = 9;
+int Right_Reverse = 9;
 
-bool startFlag = true;
+unsigned long previousMillis = 0;
+unsigned long currentMillis = 0;
+const long interval = 100;
+String receivedData;
+bool startFlag = 1;
 
 void setup() {
   Serial.begin(9600);              //Starting serial communication
   pinMode(IR_Sensor_Whisk1, INPUT);
   pinMode(IR_Sensor_Whisk2, INPUT);
 
-  pinMode(IR_Sensor_FrontLeft, INPUT);
-  pinMode(IR_Sensor_FrontRight, INPUT);
-  pinMode(IR_Sensor_BackLeft, INPUT);
-  pinMode(IR_Sensor_BackRight, INPUT);
-  
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-
   pinMode(Left_Forwards, OUTPUT);
-  pinMode(Left_Backwards, OUTPUT);
+  pinMode(Left_Reverse, OUTPUT);
   pinMode(Right_Forwards, OUTPUT);
-  pinMode(Right_Backwards, OUTPUT);
+  pinMode(Right_Reverse, OUTPUT);
   pinMode(Left_Enable, OUTPUT);
   pinMode(Right_Enable, OUTPUT);
   digitalWrite(Left_Enable, HIGH);
   digitalWrite(Right_Enable, HIGH);
-
 }
 
 void loop() {
-  // UART Code stuff
-  IR_Sensor_Val1 = analogRead(IR_Sensor_Whisk1);
-  Serial.print(IR_Sensor_Val1);
-  Serial.print('\n');
-  Serial.print(IR_Sensor_Val2);
-  Serial.print('\n');
-  //delay(1000);
-
-  // Ultrasonic sensor code stuff
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-
-  pulseDelay = pulseIn(echoPin, HIGH);
-  objectDistance = ((pulseDelay/2)*0.000343);
-
-  //Other IR sensors
+  // Wait to receive instruction from Pi before doing anything else
+  // Do as instruction says (Go forwards, left etc.)
+  // Start reading and sending data from sensors to PI at specified time intervals.
+  // This will determine sample rate of collected data. Use millis() for this.
   
-
-
-  // Control algorithm
-  if (startFlag) {
-    turnRight();
-    delay(3000);
-    startFlag = false;
+  while (startFlag == 1) {
+    if (Serial.available() > 0) {
+      startFlag = 0;
+    }
+    // Waiting to receive data from Pi
   }
-
-  
-
+  currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    sendData();
+  }
+  recData();
 }
 
+void sendData() {
+  IR_Sensor_Val1 = analogRead(IR_Sensor_Whisk1);
+  IR_Sensor_Val2 = analogRead(IR_Sensor_Whisk2);
+  Serial.print(IR_Sensor_Val1);
+  Serial.print(',');
+  Serial.print(IR_Sensor_Val2);
+  Serial.print('\n');
+}
+
+void recData() {
+  if (Serial.available() > 0) {
+    receivedData = Serial.readString();
+    Serial.print(receivedData);
+    if (receivedData == "Forward") {
+      forwards();
+    }
+    else if(receivedData == "Reverse") {
+      reverse();
+    }
+    else if(receivedData == "Left") {
+      turnLeft();
+    }
+    else if (receivedData == "Right") {
+      turnRight();
+    }
+    else if (receivedData == "Stop") {
+      stopRobot();
+    }
+    else {
+      // Change nothing
+    }
+  }
+}
 void forwards() {
   analogWrite(Left_Forwards, 255);
   analogWrite(Right_Forwards, 255);
-  analogWrite(Left_Backwards, 0);
-  analogWrite(Right_Backwards, 0);
+  analogWrite(Left_Reverse, 0);
+  analogWrite(Right_Reverse, 0);
 }
-void backwards() {
+void reverse() {
   analogWrite(Left_Forwards, 0);
   analogWrite(Right_Forwards, 0);
-  analogWrite(Left_Backwards, 255);
-  analogWrite(Right_Backwards, 255);
+  analogWrite(Left_Reverse, 255);
+  analogWrite(Right_Reverse, 255);
 }
 void turnLeft() {
   analogWrite(Left_Forwards, 255);
   analogWrite(Right_Forwards, 0);
-  analogWrite(Left_Backwards, 0);
-  analogWrite(Right_Backwards, 255);
+  analogWrite(Left_Reverse, 0);
+  analogWrite(Right_Reverse, 255);
 }
 void turnRight() {
   analogWrite(Left_Forwards, 0);
   analogWrite(Right_Forwards, 255);
-  analogWrite(Left_Backwards, 255);
-  analogWrite(Right_Backwards, 0);
+  analogWrite(Left_Reverse, 255);
+  analogWrite(Right_Reverse, 0);
 }
 void stopRobot() {
   analogWrite(Left_Forwards, 0);
   analogWrite(Right_Forwards, 0);
-  analogWrite(Left_Backwards, 0);
-  analogWrite(Right_Backwards, 0);
+  analogWrite(Left_Reverse, 0);
+  analogWrite(Right_Reverse, 0);
 }
