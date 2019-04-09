@@ -6,6 +6,7 @@ import serial
 import time
 from bluetooth import *
 import _thread
+#import threading
 import csv
 import re
 #import bluetooth
@@ -14,7 +15,7 @@ import re
 ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port at baud rate of 9600
 ser.flushInput()
 ser.flushOutput()
-
+myLock = _thread.allocate_lock()
 raspPi_sock=BluetoothSocket(RFCOMM) # Opens bluetooth socket of RFCOMM protocol
 raspPi_sock.bind(("",PORT_ANY)) # Binds socket to a local address and uses any available port
 raspPi_sock.listen(1) # Starts listening for 1 incoming connection and will refuse any others
@@ -29,14 +30,29 @@ myPhone_sock, myPhone_addr = raspPi_sock.accept()
 print ("Accepted connection from ", myPhone_addr)
 ############################################################################################
 
+#class phoneThread(threading.Thread):
+#    def __init__(self, threadID, name, myPhone_sock):
+#        threading.Thread.__init__(self)
+#        self.threadID = threadID
+#        self.name = name
+#        self.myPhone_sock = myPhone_sock
+#    def run(self):
+#        threadLock.acquire()
+#        phoneInstr(myPhone_sock)
+#    
 def phoneInstr(myPhone_sock):
     while True:
-        phoneInstrData = myPhone_sock.recv(8) # receives up to 8 bytes from socket, stores in phoneInstrData
+        phoneInstrData = myPhone_sock.recv(10) # receives up to 10 bytes from socket, stores in phoneInstrData
         if len(phoneInstrData) != 0:
             print (phoneInstrData) # prints data
-            ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
-            ser.flushOutput()
-            ser.flushInput()
+            try:
+                myLock.acquire(1,0.15)
+                ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
+                #ser.flushOutput()
+                #ser.flushInput()
+                myLock.release()
+            except:
+                print("Error1")
         else:
             myPhone_sock.close() # Closes phone's socket (client)
             raspPi_sock.close() # Closes Raspberry Pi's socket (server)
@@ -46,16 +62,24 @@ def phoneInstr(myPhone_sock):
     
 def getTrainingData():
     while True:
-        read_serial1=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 1)
-        read_serial2=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 2)
+        try:
+            myLock.acquire(1,0.15)
+            read_serial1=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 1)
+            read_serial2=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 2)
+            myLock.release()
+        except:
+            print("Error2")
         read_serial1 = read_serial1.decode() # Decodes the received byte to string
         read_serial2 = read_serial2.decode() # Decodes the received byte to string
-        try:
-            read_serial1 = int(read_serial1) # converts from string to int
-            read_serial2 = int(read_serial2) # converts from string to int
-        except:
-            read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
-            read_serial2 = re.sub("[^0-9]", "", read_serial2)
+        #if (len(read_serial1) > 0):
+        #    read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
+        #    read_serial1 = int(read_serial1) # converts from string to int
+        #elif (len(read_serial2) > 0):
+        #    read_serial2 = re.sub("[^0-9]", "", read_serial2)
+        #    read_serial2 = int(read_serial2) # converts from string to int
+        #else:
+        read_serial1 = int(read_serial1) # converts from string to int
+        read_serial2 = int(read_serial2) # converts from string to int
         print (read_serial1)
         print (read_serial2)
         # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
