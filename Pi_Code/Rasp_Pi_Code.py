@@ -7,6 +7,7 @@ import time
 from bluetooth import *
 import _thread
 import csv
+import re
 #import bluetooth
 
 ####################### Setup #########################################################
@@ -49,8 +50,12 @@ def getTrainingData():
         read_serial2=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 2)
         read_serial1 = read_serial1.decode() # Decodes the received byte to string
         read_serial2 = read_serial2.decode() # Decodes the received byte to string
-        read_serial1 = int(read_serial1) # converts from string to int
-        read_serial2 = int(read_serial2) # converts from string to int
+        try:
+            read_serial1 = int(read_serial1) # converts from string to int
+            read_serial2 = int(read_serial2) # converts from string to int
+        except:
+            read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
+            read_serial2 = re.sub("[^0-9]", "", read_serial2)
         print (read_serial1)
         print (read_serial2)
         # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
