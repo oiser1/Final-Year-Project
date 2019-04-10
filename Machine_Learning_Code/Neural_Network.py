@@ -2,7 +2,9 @@ import tensorflow as tf
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
+# Creates lists
 leftWhisk = []
 rightWhisk = []
 
@@ -16,19 +18,23 @@ def dataHandler(leftWhisk, rightWhisk):
                 leftWhisk.append(row[0])
                 rightWhisk.append(row[1])
 
-            leftWhisk = np.asarray(leftWhisk)
+            leftWhisk = np.asarray(leftWhisk) # Converts list to array
             rightWhisk = np.asarray(rightWhisk)
+            leftWhisk_Dataset = pd.DataFrame(leftWhisk)
+            rightWhisk_Dataset = pd.DataFrame(rightWhisk)
+            print(leftWhisk_Dataset)
+            print(rightWhisk_Dataset)
             #print(leftWhisk)
             plt.plot(leftWhisk)
             plt.ylabel('Range')
             plt.xlabel('Samples')
-            plt.show()
+            #plt.show()
             #print("\n")
             #print(rightWhisk)
             plt.plot(rightWhisk)
             plt.ylabel('Range')
             plt.xlabel('Samples')
-            plt.show()
+            #plt.show()
 def main():
     dataHandler(leftWhisk, rightWhisk)
     while True:
