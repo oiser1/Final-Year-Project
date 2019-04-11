@@ -1,13 +1,13 @@
-int IR_Sensor_Whisk1 = A0;
-int IR_Sensor_Whisk2 = A1;
-int IR_Sensor_Val1, IR_Sensor_Val2;
+int IR_Sensor_LeftWhisk = A0;
+int IR_Sensor_RightWhisk = A1;
+int IR_Sensor_Left, IR_Sensor_Right;
 
-int Left_Enable = 2;
-int Left_Forwards = 3;
-int Left_Reverse = 5;
-int Right_Enable = 4;
-int Right_Forwards = 6;
-int Right_Reverse = 9;
+int Right_Enable = 2;
+int Right_Reverse = 3;
+int Right_Forwards = 5;
+int Left_Enable = 4;
+int Left_Reverse = 6;
+int Left_Forwards = 9;
 
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
@@ -17,8 +17,8 @@ bool startFlag = 1;
 
 void setup() {
   Serial.begin(9600);              //Starting serial communication
-  pinMode(IR_Sensor_Whisk1, INPUT);
-  pinMode(IR_Sensor_Whisk2, INPUT);
+  pinMode(IR_Sensor_LeftWhisk, INPUT);
+  pinMode(IR_Sensor_RightWhisk, INPUT);
 
   pinMode(Left_Forwards, OUTPUT);
   pinMode(Left_Reverse, OUTPUT);
@@ -51,11 +51,11 @@ void loop() {
 }
 
 void sendData() {
-  IR_Sensor_Val1 = analogRead(IR_Sensor_Whisk1);
-  IR_Sensor_Val2 = analogRead(IR_Sensor_Whisk2);
-  Serial.print(IR_Sensor_Val1);
+  IR_Sensor_Left = analogRead(IR_Sensor_LeftWhisk);
+  IR_Sensor_Right = analogRead(IR_Sensor_RightWhisk);
+  Serial.print(IR_Sensor_Left);
   Serial.print('\n');
-  Serial.print(IR_Sensor_Val2);
+  Serial.print(IR_Sensor_Right);
   Serial.print('\n');
 }
 
