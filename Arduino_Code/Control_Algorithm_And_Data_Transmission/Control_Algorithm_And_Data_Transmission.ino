@@ -96,16 +96,16 @@ void reverse() {
   analogWrite(Right_Reverse, 255);
 }
 void turnLeft() {
-  analogWrite(Left_Forwards, 255);
-  analogWrite(Right_Forwards, 0);
-  analogWrite(Left_Reverse, 0);
-  analogWrite(Right_Reverse, 255);
-}
-void turnRight() {
   analogWrite(Left_Forwards, 0);
   analogWrite(Right_Forwards, 255);
   analogWrite(Left_Reverse, 255);
   analogWrite(Right_Reverse, 0);
+}
+void turnRight() {
+  analogWrite(Left_Forwards, 255);
+  analogWrite(Right_Forwards, 0);
+  analogWrite(Left_Reverse, 0);
+  analogWrite(Right_Reverse, 255);
 }
 void stopRobot() {
   analogWrite(Left_Forwards, 0);
