@@ -12,14 +12,14 @@ import re
 #import bluetooth
 
 ####################### Setup #########################################################
-ser = serial.Serial('/dev/ttyAMA0',9600) # Opens serial port at baud rate of 9600
+ser = serial.Serial('/dev/ttyAMA0',2000000) # Opens serial port at baud rate of 2000000
 ser.flushInput()
 ser.flushOutput()
+myError = 0
 myLock = _thread.allocate_lock()
 raspPi_sock=BluetoothSocket(RFCOMM) # Opens bluetooth socket of RFCOMM protocol
 raspPi_sock.bind(("",PORT_ANY)) # Binds socket to a local address and uses any available port
 raspPi_sock.listen(1) # Starts listening for 1 incoming connection and will refuse any others
-
 port = raspPi_sock.getsockname()[1] # returns port being used
 
 print ("Waiting for connection on RFCOMM channel %d" % port)
@@ -41,13 +41,15 @@ print ("Accepted connection from ", myPhone_addr)
 #        phoneInstr(myPhone_sock)
 #    
 def phoneInstr(myPhone_sock):
+    global myError
     while True:
         phoneInstrData = myPhone_sock.recv(10) # receives up to 10 bytes from socket, stores in phoneInstrData
         if len(phoneInstrData) != 0:
             print (phoneInstrData) # prints data
             try:
-                myLock.acquire(1,0.15)
+                myLock.acquire(1,0.01) # Will acquire lock if it can do it in 0.01 seconds
                 ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
+                myError = 1
                 #ser.flushOutput()
                 #ser.flushInput()
                 myLock.release()
@@ -61,33 +63,72 @@ def phoneInstr(myPhone_sock):
     return;
     
 def getTrainingData():
+    global myError
+    #error = 0
     while True:
         try:
-            myLock.acquire(1,0.15)
+            myLock.acquire(1,0.01) # Will acquire lock if it can do it in 0.01 seconds
             read_serial1=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 1)
             read_serial2=ser.readline() # Reads data line in from Arduino using RX pin (From sensor 2)
             myLock.release()
         except:
             print("Error2")
+            #error = 1
+            
         read_serial1 = read_serial1.decode() # Decodes the received byte to string
         read_serial2 = read_serial2.decode() # Decodes the received byte to string
-        #if (len(read_serial1) > 0):
-        #    read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
-        #    read_serial1 = int(read_serial1) # converts from string to int
-        #elif (len(read_serial2) > 0):
+        if ((len(read_serial1) > 4) or (len(read_serial2) > 4)) and (myError == 1):
+            read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
+            read_serial2 = re.sub("[^0-9]", "", read_serial2)
+            myError = 0
+            #read_serial1 = int(read_serial1) # converts from string to int
+        #elif (len(read_serial2) > 4):
         #    read_serial2 = re.sub("[^0-9]", "", read_serial2)
-        #    read_serial2 = int(read_serial2) # converts from string to int
+            #read_serial2 = int(read_serial2) # converts from string to int
         #else:
-        read_serial1 = int(read_serial1) # converts from string to int
-        read_serial2 = int(read_serial2) # converts from string to int
-        print (read_serial1)
-        print (read_serial2)
-        # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
-        # to the csv file. Flushes the files buffer.
-        with open('TrainingData.csv', mode='a') as TrainingData:
-            TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
-            TrainingDataWriter.writerow([read_serial1,read_serial2])
-            TrainingData.flush()
+        #if (error == 2):
+        #    read_serial1 = re.sub("[^0-9]", "", read_serial1) # If any letters are present, remove them and leave numbers
+        #    read_serial2 = re.sub("[^0-9]", "", read_serial2)
+        #    error = 0
+        #if (error == 1):
+        #    error = 2
+        try:
+            read_serial1 = int(read_serial1) # converts from string to int
+            read_serial2 = int(read_serial2) # converts from string to int
+            print (read_serial1)
+            print (read_serial2)
+        
+            # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
+            # to the csv file. Flushes the files buffer.
+            #with open('TrainingData.csv', mode='a') as TrainingData:
+            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
+            #    TrainingData.flush()
+                
+            #with open('FlatTerrainData.csv', mode='a') as TrainingData:
+            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
+            #    TrainingData.flush()
+                
+            with open('RoughTerrainData.csv', mode='a') as TrainingData:
+                TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+                TrainingDataWriter.writerow([read_serial1,read_serial2])
+                TrainingData.flush()
+                
+            #with open('WallData.csv', mode='a') as TrainingData:
+            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
+            #    TrainingData.flush()
+                
+            #with open('SmallObjectData.csv', mode='a') as TrainingData:
+            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
+            #    TrainingData.flush()
+            
+        except:
+            print("Error3")
+                
+        
     return;
 
 def main():
