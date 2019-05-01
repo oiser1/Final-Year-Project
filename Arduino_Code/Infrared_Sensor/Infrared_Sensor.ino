@@ -10,7 +10,7 @@ void setup() {
 
 void loop() {
     digitalWrite(IR_LED, HIGH);
-    delay(1000);
+    delay(10);
     x = analogRead(IR_Sensor);
     /*
     digitalWrite(IR_LED, LOW);
