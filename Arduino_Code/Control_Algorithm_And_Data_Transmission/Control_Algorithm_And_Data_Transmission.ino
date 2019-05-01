@@ -11,12 +11,12 @@ int Left_Forwards = 9;
 
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
-const long interval = 100;
+const long interval = 10;
 String receivedData;
 bool startFlag = 1;
 
 void setup() {
-  Serial.begin(9600);              //Starting serial communication
+  Serial.begin(2000000);              //Starting serial communication
   pinMode(IR_Sensor_LeftWhisk, INPUT);
   pinMode(IR_Sensor_RightWhisk, INPUT);
 
