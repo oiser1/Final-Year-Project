@@ -100,27 +100,27 @@ def getTrainingData():
         
             # Opens csv file, ready for appending to. Appends sensor 1 and 2 data values 
             # to the csv file. Flushes the files buffer.
-            #with open('TrainingData.csv', mode='a') as TrainingData:
-            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
-            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
-            #    TrainingData.flush()
+            with open('TrainingData.csv', mode='a') as TrainingData:
+                TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+                TrainingDataWriter.writerow([read_serial1,read_serial2])
+                TrainingData.flush()
                 
             #with open('FlatTerrainData.csv', mode='a') as TrainingData:
             #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
             #    TrainingDataWriter.writerow([read_serial1,read_serial2])
             #    TrainingData.flush()
                 
-            with open('RoughTerrainData.csv', mode='a') as TrainingData:
-                TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
-                TrainingDataWriter.writerow([read_serial1,read_serial2])
-                TrainingData.flush()
+            #with open('RoughTerrainData.csv', mode='a') as TrainingData:
+            #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
+            #    TrainingDataWriter.writerow([read_serial1,read_serial2])
+            #    TrainingData.flush()
                 
             #with open('WallData.csv', mode='a') as TrainingData:
             #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
             #    TrainingDataWriter.writerow([read_serial1,read_serial2])
             #    TrainingData.flush()
                 
-            #with open('SmallObjectData.csv', mode='a') as TrainingData:
+            #with open('ObjectTwangData.csv', mode='a') as TrainingData:
             #    TrainingDataWriter = csv.writer(TrainingData, delimiter=',')
             #    TrainingDataWriter.writerow([read_serial1,read_serial2])
             #    TrainingData.flush()
