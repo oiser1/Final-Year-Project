@@ -35,7 +35,7 @@ void loop() {
   // Do as instruction says (Go forwards, left etc.)
   // Start reading and sending data from sensors to PI at specified time intervals.
   // This will determine sample rate of collected data. Use millis() for this.
-  
+
   while (startFlag == 1) {
     if (Serial.available() > 0) {
       startFlag = 0;
@@ -66,10 +66,10 @@ void recData() {
     if (receivedData == "Forward") {
       forwards();
     }
-    else if(receivedData == "Reverse") {
+    else if (receivedData == "Reverse") {
       reverse();
     }
-    else if(receivedData == "Left") {
+    else if (receivedData == "Left") {
       turnLeft();
     }
     else if (receivedData == "Right") {
@@ -85,7 +85,7 @@ void recData() {
 }
 void forwards() {
   analogWrite(Left_Forwards, 255);
-  analogWrite(Right_Forwards, 255);
+  analogWrite(Right_Forwards, 242);
   analogWrite(Left_Reverse, 0);
   analogWrite(Right_Reverse, 0);
 }
@@ -93,11 +93,11 @@ void reverse() {
   analogWrite(Left_Forwards, 0);
   analogWrite(Right_Forwards, 0);
   analogWrite(Left_Reverse, 255);
-  analogWrite(Right_Reverse, 255);
+  analogWrite(Right_Reverse, 242);
 }
 void turnLeft() {
   analogWrite(Left_Forwards, 0);
-  analogWrite(Right_Forwards, 255);
+  analogWrite(Right_Forwards, 242);
   analogWrite(Left_Reverse, 255);
   analogWrite(Right_Reverse, 0);
 }
@@ -105,7 +105,7 @@ void turnRight() {
   analogWrite(Left_Forwards, 255);
   analogWrite(Right_Forwards, 0);
   analogWrite(Left_Reverse, 0);
-  analogWrite(Right_Reverse, 255);
+  analogWrite(Right_Reverse, 242);
 }
 void stopRobot() {
   analogWrite(Left_Forwards, 0);
