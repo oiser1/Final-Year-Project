@@ -76,7 +76,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels):
         plt.xlabel(class_names[myTrainLabels[k]])
     plt.show()
 
-    print("end")
+    #print("end")
     train_data = np.append(train_data, myTrainData)
     train_labels = np.append(train_labels, myTrainLabels)
     return train_data, train_labels
@@ -85,9 +85,9 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels):
 def trainingAlgorithm(train_data, train_labels):
     model = keras.Sequential([
     #keras.layers.Flatten(input_shape=(100,)),
-    keras.layers.Dense(80, activation=tf.nn.relu),
+    keras.layers.Dense(20, activation=tf.nn.relu),
     #keras.layers.Dense(10, activation=tf.nn.relu),
-    keras.layers.Dense(10, activation=tf.nn.softmax)
+    #keras.layers.Dense(10, activation=tf.nn.softmax)
     ])
 
     model.compile(optimizer='adam',
@@ -113,13 +113,13 @@ def main():
     csvFileName = 'RoughTerrainData.csv'
     train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
-    #labelNumber = 2
-    #csvFileName = 'WallData.csv'
-    #train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
+    labelNumber = 2
+    csvFileName = 'WallData.csv'
+    train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
-    #labelNumber = 3
-    #csvFileName = 'SmallObjectData.csv'
-    #train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
+    labelNumber = 3
+    csvFileName = 'SmallObjectData.csv'
+    train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
     numSections = int(len(train_data)/100)
     train_data = np.reshape(train_data,(numSections,100))
