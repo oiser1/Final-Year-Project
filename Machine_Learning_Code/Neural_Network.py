@@ -117,9 +117,9 @@ def main():
     csvFileName = 'WallData.csv'
     train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
-    labelNumber = 3
-    csvFileName = 'SmallObjectData.csv'
-    train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
+    #labelNumber = 3
+    #csvFileName = 'SmallObjectData.csv'
+    #train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
     numSections = int(len(train_data)/100)
     train_data = np.reshape(train_data,(numSections,100))
