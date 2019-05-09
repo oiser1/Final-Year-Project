@@ -30,7 +30,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
     myTestData = np.array([])
     myTestLabels = np.array([])
-    testPercent = 0.1 # 10%
+    testPercent = 10 # %
 
     appendFlag = 1
     i = 0
@@ -39,7 +39,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     m = 0
     while appendFlag == 1:
         whiskSection = leftWhisk[i:i+50]
-        if (testDataCounter >= 100*testPercent):
+        if (testDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
             testDataCounter = 0
@@ -63,7 +63,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
     while appendFlag == 1:
         whiskSection = rightWhisk[i:i+50]
-        if (testDataCounter >= 100*testPercent):
+        if (testDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
             testDataCounter = 0
@@ -95,19 +95,13 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     plt.figure(num=labelNumber+1, figsize=(10,10))
     for k in range(16):
         plt.subplot(4,4,k+1)
-        #plt.ylim = ([0.2,0.5])
+        plt.ylim (0.1,0.9)
         #thisPlot.set_autoscaley_on(False)
-        #plt.xticks([])
-        #plt.yticks([])
-        #plt.grid(False)
-        #plt.imshow(train_data[k], cmap=plt.cm.binary)
         plt.plot(myTrainData[k+random.randint(0,200)])
         #plt.plot(myTrainData[k])
         plt.xlabel(class_names[myTrainLabels[k]])
         
     #plt.show()
-
-    #print("end")
     train_data = np.append(train_data, myTrainData)
     train_labels = np.append(train_labels, myTrainLabels)
     test_data = np.append(test_data, myTestData)
@@ -117,9 +111,11 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
 def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     model = keras.Sequential([
-    #keras.layers.Flatten(input_shape=(100,)),
-    keras.layers.Dense(30, activation=tf.nn.relu),
-    keras.layers.Dense(10, activation=tf.nn.relu),
+    #keras.layers.Flatten(input_shape=(50,1)),
+    keras.layers.Dense(20, activation=tf.nn.relu),
+    keras.layers.Dense(20, activation=tf.nn.relu),
+    #keras.layers.Dense(10, activation=tf.nn.relu),
+    #keras.layers.Dense(10, activation=tf.nn.relu),
     keras.layers.Dense(4, activation=tf.nn.softmax)
     ])
 
@@ -127,9 +123,15 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     loss='sparse_categorical_crossentropy', 
     metrics=['accuracy'])
 
-    model.fit(train_data, train_labels, epochs=100)
+    model.fit(train_data, train_labels, epochs=200)
 
     model.evaluate(test_data, test_labels)
+
+    #predictions = model.predict(test_data)
+    #x = random.randint(0,248)
+    #print(np.argmax(predictions[x]))
+    #print(test_labels[x])
+
 
 
 
@@ -145,26 +147,26 @@ def main():
     labelNumber = 0
     csvFileName = 'FlatTerrainData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
-    plt.figure(5)
-    plt.plot(train_data)
+    #plt.figure(5)
+    #plt.plot(train_data)
 
     labelNumber = 1
     csvFileName = 'RoughTerrainData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
-    plt.figure(6)
-    plt.plot(train_data)
+    #plt.figure(6)
+    #plt.plot(train_data)
 
     labelNumber = 2
     csvFileName = 'WallData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
-    plt.figure(7)
-    plt.plot(train_data)
+    #plt.figure(7)
+    #plt.plot(train_data)
 
     labelNumber = 3
     csvFileName = 'ObjectTwangData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
-    plt.figure(8)
-    plt.plot(train_data)
+    #plt.figure(8)
+    #plt.plot(train_data)
 
     numSections = int(len(train_data)/50)
     train_data = np.reshape(train_data,(numSections,50))
