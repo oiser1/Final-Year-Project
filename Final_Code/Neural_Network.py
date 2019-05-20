@@ -1,10 +1,11 @@
 # Tensorflow tutorial was used. https://www.tensorflow.org/tutorials/keras/basic_classification#explore_the_data
+# https://keras.io/
 import tensorflow as tf
 from tensorflow import keras
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import random
 
 def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels):
@@ -39,6 +40,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     m = 0
     while appendFlag == 1:
         whiskSection = leftWhisk[i:i+50]
+        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min())
         if (testDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
@@ -63,6 +65,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
     while appendFlag == 1:
         whiskSection = rightWhisk[i:i+50]
+        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min())
         if (testDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
@@ -84,23 +87,24 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
     myTestData = np.reshape(myTestData,(m,50))
     myTestLabels = myTestLabels.astype(int)
-
+    '''
     print(myTrainData)
     print(myTrainLabels)
     print(myTestData)
     print(myTestLabels)
     print(len(myTrainData))
     print(len(myTestData))
-
+    '''
+    '''
     plt.figure(num=labelNumber+1, figsize=(10,10))
     for k in range(16):
         plt.subplot(4,4,k+1)
-        plt.ylim (0.1,0.9)
+        plt.ylim (-1,1)
         #thisPlot.set_autoscaley_on(False)
         plt.plot(myTrainData[k+random.randint(0,200)])
         #plt.plot(myTrainData[k])
         plt.xlabel(class_names[myTrainLabels[k]])
-        
+      '''
     #plt.show()
     train_data = np.append(train_data, myTrainData)
     train_labels = np.append(train_labels, myTrainLabels)
@@ -110,23 +114,56 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
 
 def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
-    model = keras.Sequential([
+    '''model = keras.Sequential([
     #keras.layers.Flatten(input_shape=(50,1)),
     keras.layers.Dense(20, activation=tf.nn.relu),
-    keras.layers.Dense(20, activation=tf.nn.relu),
-    #keras.layers.Dense(10, activation=tf.nn.relu),
+    #keras.layers.Dense(20, activation=tf.nn.relu),
+    keras.layers.Dense(8, activation=tf.nn.relu),
     #keras.layers.Dense(10, activation=tf.nn.relu),
     keras.layers.Dense(4, activation=tf.nn.softmax)
-    ])
+    ])'''
+    # Creates a Keras Sequential model, which is a linear 
+    model = keras.Sequential()
+    model.add(keras.layers.Dense(20, activation=tf.nn.relu, input_dim=50))
+    #model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.Dropout(0.2))
+    model.add(keras.layers.Dense(10, activation=tf.nn.relu))
+    #model.add(keras.layers.Dense(17, activation=tf.nn.relu))
+    model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
 
-    model.compile(optimizer='adam',
-    loss='sparse_categorical_crossentropy', 
-    metrics=['accuracy'])
+    opt = keras.optimizers.Adam(lr=0.002)
+    model.compile(
+        optimizer=opt,
+        loss='sparse_categorical_crossentropy', # loss is 
+        metrics=['accuracy']
+    )
 
-    model.fit(train_data, train_labels, epochs=200)
+    model.fit(train_data, train_labels, epochs=1, shuffle=True, validation_split=0.05)
 
-    model.evaluate(test_data, test_labels)
+    model.evaluate(test_data, test_labels, batch_size=32)
 
+    weights = model.layers[0].get_weights()[0]
+    biases = model.layers[0].get_weights()[1]
+    np.save('Layer0Weights.npy', weights)
+    np.save('Layer0Biases.npy', biases)
+    #loaded = np.load('Layer0Weights.npy')
+    weights = model.layers[1].get_weights()[0]
+    biases = model.layers[1].get_weights()[1]
+    np.save('Layer1Weights.npy', weights)
+    np.save('Layer1Biases.npy', biases)
+    '''weights = model.layers[2].get_weights()[0]
+    biases = model.layers[2].get_weights()[1]
+    np.save('Layer2Weights.npy', weights)
+    np.save('Layer2Biases.npy', biases)'''
+
+    #print("Weights", weights)
+    #print("Loaded Weights", loaded)
+    #print("Biases", biases)
+
+    
+
+    #print("Weights", weights)
+    #print("Biases", biases)
     #predictions = model.predict(test_data)
     #x = random.randint(0,248)
     #print(np.argmax(predictions[x]))
@@ -177,10 +214,6 @@ def main():
     trainingAlgorithm(train_data, train_labels, test_data, test_labels)
 
     plt.show()
-    #while True:
-    #    pass
-
-
 
 if __name__== "__main__":
     main()
