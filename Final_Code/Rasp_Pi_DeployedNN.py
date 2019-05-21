@@ -10,9 +10,12 @@ import _thread
 import csv
 import re
 #import bluetooth
+import tensorflow as tf
 import RPi.GPIO as GPIO
 import lcd
 import numpy as np
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 ####################### Setup #########################################################
 ser = serial.Serial('/dev/ttyAMA0',2000000) # Opens serial port at baud rate of 2000000
 ser.flushInput()
@@ -62,14 +65,14 @@ def phoneInstr(myPhone_sock):
             raspPi_sock.close() # Closes Raspberry Pi's socket (server)
         #print (phoneInstrData) # prints data
         #ser.write(phoneInstrData) # Sends data to Arduino over Tx pin
-    return
-    
+    return;
+
 def getData():
     global myError
     #error = 0
     leftWhiskArr = np.array([])
     rightWhiskArr = np.array([])
-    countFlag = 0
+    numSamples = 0
     while True:
         try:
             myLock.acquire(1,0.01) # Will acquire lock if it can do it in 0.01 seconds
@@ -97,24 +100,25 @@ def getData():
         except:
             print("Error3")
 
-        L0Weights = np.load("Layer0Weights.npy")
-        L0Biases = np.load("Layer0Biases.npy")
-        L1Weights = np.load("Layer1Weights.npy")
-        L1Biases = np.load("Layer1Biases.npy")
-        L2Weights = np.load("Layer2Weights.npy")
-        L2Biases = np.load("Layer2Biases.npy")
+        leftWhiskArr = np.append(leftWhiskArr,read_serial1)
+        rightWhiskArr = np.append(rightWhiskArr, read_serial2)
+        numSamples=numSamples+1
+        
+        if (numSamples >= 50):
+            leftWhiskArr = np.expand_dims(leftWhiskArr, axis=0)
+            rightWhiksArr = np.expand_dims(rightWhiskArr, axis=0)
+            leftWhiskResult=deployNN(leftWhiskArr)
+            rightWhiskResult=deployNN(rightWhiskArr)
+            displayNNResult(leftWhiskResult,rightWhiskResult)
+            numSamples = 0
+            leftWhiskArr = np.array([])
+            rightWhiskArr = np.array([])
+            
+                
 
-        #if (countFlag == 0):
-        #    leftWhiskArr = np.append(leftWhiskArr,read_serial1)
-        #    rightWhiskArr = np.append(rightWhiskArr, read_serial2)
-            if (len(leftWhiskArr == 50)):
-                inputs = leftWhiskArr
-                weights = L0Weights
-                Biases = L0Biases
+    return;
 
-    return
-
-def displayNNResult(leftWhiskOut, rightWhiskOut):
+def displayNNResult(leftWhiskResult, rightWhiskResult):
     lcd.lcd_init()
     # set cursor to line 1
     lcd.lcd_byte(lcd.LCD_LINE_1, lcd.LCD_CMD)
@@ -134,13 +138,11 @@ def displayNNResult(leftWhiskOut, rightWhiskOut):
     # display text centered on line 5
     lcd.lcd_string(rightWhiskOut, 2)
 
-def deployNN():
-    L0Weights = np.load("Layer0Weights.npy")
-    L0Biases = np.load("Layer0Biases.npy")
-    L1Weights = np.load("Layer1Weights.npy")
-    L1Biases = np.load("Layer1Biases.npy")
-    L2Weights = np.load("Layer2Weights.npy")
-    L2Biases = np.load("Layer2Biases.npy")
+def deployNN(whiskData):
+    robotModel = tf.keras.models.load_model('MLRobot.h5')
+    result = np.argmax(robotModel.predict(whiskData))
+    
+    return result;
 
 
 def main():
