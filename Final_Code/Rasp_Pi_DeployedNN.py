@@ -13,7 +13,7 @@ import re
 import tensorflow as tf
 from tensorflow import keras
 import RPi.GPIO as GPIO
-import lcd
+#import lcd
 import numpy as np
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -204,6 +204,7 @@ def displayNNResult(leftWhiskResult, rightWhiskResult):
     return;
 
 def deployNN(whiskData):
+    #whiskData = (whiskData - whiskData.min())/(whiskData.max() - whiskData.min()) # Normalises data
     print("Hello2.1")
     whiskData = np.expand_dims(whiskData, axis=0)
     print("Hello2.2")
