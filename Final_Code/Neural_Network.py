@@ -41,62 +41,65 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     # Create two empty arrays to hold the test data and labels
     myTestData = np.array([])
     myTestLabels = np.array([])
-    testPercent = 10 # % of entire data which is test data
 
-    appendFlag = 1
-    i = 0
-    j = 0
-    testDataCounter = 0
-    m = 0
+    testPercent = 10        # % of entire data which is test data
+    trainDataCounter = 0    # Used to count number of 50 sample sections are being added to 'myTrainData'
+    appendFlag = 1          # Flag which 
+    i = 0                   # 
+    j = 0                   # Counts number of 50 section samples added to 'myTrainData' for reshaping later
+    m = 0                   # Counts number of 50 section samples added to 'myTestData' for reshaping later
+
+    # Loop to take all data from left whisker and append it to 
     while appendFlag == 1:
-        whiskSection = leftWhisk[i:i+50]
-        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min())
-        if (testDataCounter >= (100/testPercent)):
-            myTestData = np.append(myTestData,[whiskSection])
-            myTestLabels = np.append(myTestLabels,labelNumber)
-            testDataCounter = 0
-            m+=1
-        #if i == 0:
-        #    myTrainData = np.array([whiskSection])
-        #    myTrainLabels = np.array(0)
+        whiskSection = leftWhisk[i:i+50]    # 
+        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
+        # When counter increases to equal 100/testPercent (10%, 1 in 10), appends data to 'myTestData'
+        if (trainDataCounter >= (100/testPercent)):
+            myTestData = np.append(myTestData,[whiskSection])   # Appends the selected 50 data samples to 'myTestData'
+            myTestLabels = np.append(myTestLabels,labelNumber)  # Appends the label for the current target data to 'myTestLabels'
+            trainDataCounter = 0 # increases 'trainDataCounter'
+            m+=1    # increases m counter
+
+        # Otherwise data is appended to 'myTrainData'
         else:
-            myTrainData = np.append(myTrainData,[whiskSection])
-            myTrainLabels = np.append(myTrainLabels,labelNumber)
-            j+=1
-        #print(train_data)
-        i+=50
-        testDataCounter+=1
+            myTrainData = np.append(myTrainData,[whiskSection])     # Appends the selected 50 data samples to 'myTrainData'
+            myTrainLabels = np.append(myTrainLabels,labelNumber)    # Appends the label for the current target data to 'myTrainLabels'
+            j+=1    # increases j counter 
+        #print(train_data) # Here for debugging purposes
+        i+=50   # increases i counter
+        trainDataCounter+=1 # increases 'trainDataCounter'
         if ((len(leftWhisk) - i) < 50):
             appendFlag = 0
 
     appendFlag = 1
     i = 0
-    testDataCounter = 0
+    trainDataCounter = 0
 
+    # Loop to take all data from right whisker and append it to 
     while appendFlag == 1:
         whiskSection = rightWhisk[i:i+50]
-        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min())
-        if (testDataCounter >= (100/testPercent)):
+        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
+        if (trainDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
-            testDataCounter = 0
+            trainDataCounter = 0
             m+=1
         else:
             myTrainData = np.append(myTrainData,[whiskSection])
             myTrainLabels = np.append(myTrainLabels,labelNumber)
             j+=1
-        #print(train_data)
+        #print(train_data)  # Here for debugging purposes
         i+=50
-        testDataCounter+=1
+        trainDataCounter+=1
         if ((len(rightWhisk) - i) < 50):
             appendFlag = 0
 
-    myTrainData = np.reshape(myTrainData,(j,50))
+    myTrainData = np.reshape(myTrainData,(j,50))    # Reshapes training data to arrays of 50 samples long
     #myTrainLabels = np.reshape(myTrainLabels,(j,1))
-    myTrainLabels = myTrainLabels.astype(int)
+    myTrainLabels = myTrainLabels.astype(int)       # Makes sure all the training data labels are ints
 
-    myTestData = np.reshape(myTestData,(m,50))
-    myTestLabels = myTestLabels.astype(int)
+    myTestData = np.reshape(myTestData,(m,50))      # Reshapes testing data to arrays of 50 samples long
+    myTestLabels = myTestLabels.astype(int)         # Makes sure all the testing data labels are ints
     '''
     print(myTrainData)
     print(myTrainLabels)
@@ -106,7 +109,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     print(len(myTestData))
     '''
     '''
-    # Plots figures for each target for observation purposes
+    # Plots figures for each target for observation of recorded data
     plt.figure(num=labelNumber+1, figsize=(10,10))
     for k in range(16):
         plt.subplot(4,4,k+1)
@@ -116,7 +119,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
         #plt.plot(myTrainData[k])
         plt.xlabel(class_names[myTrainLabels[k]])
       '''
-    #plt.show()
+
     # Following lines append training/testing data/labels from the current 
     # csv file to the arrays to be returned to the main function
     train_data = np.append(train_data, myTrainData)
@@ -135,7 +138,11 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     #keras.layers.Dense(10, activation=tf.nn.relu),
     keras.layers.Dense(4, activation=tf.nn.softmax)
     ])'''
-    # Creates a Keras Sequential model, which is a linear 
+    # Creates a Keras Sequential model, which is an ordinary Artificial Neural
+    # Network with Dense layers (regular connected layer). 'model.add' adds a new
+    # layer to the network, where the number of nodes in the layer is first defined
+    # followed by the activation function, and if it is the first layer of 
+    # the network, the input dimmensions defined.
     model = keras.Sequential()
     model.add(keras.layers.Dense(20, activation=tf.nn.relu, input_dim=50))
     #model.add(keras.layers.BatchNormalization())
@@ -144,11 +151,11 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     #model.add(keras.layers.Dense(17, activation=tf.nn.relu))
     model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
 
-    # Optimizer's parameters are altered here
+    # Optimizer's parameters are altered here. 
     opt = keras.optimizers.Adam(lr=0.002)
     model.compile(
         optimizer=opt,  # Optimizer set here
-        loss='sparse_categorical_crossentropy', # Loss function for this NN
+        loss='sparse_categorical_crossentropy', # Loss function for this NN. The number the NN is trying to decrease
         metrics=['accuracy']    # Accuracy of neural network shown during training 
     )
     # Training of the model with training data and labels. Number of epochs are set, data is shuffled
@@ -198,14 +205,15 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
 
 
 def main():
+    # Creating empty arrays to hols all the data
     train_data = np.array([])
     train_labels = np.array([])
     test_data = np.array([])
     test_labels = np.array([])
-    #labelNumber = 0
-    #csvFileName = 'TrainingData.csv'
-    #train_data, train_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels)
 
+    # label number is the target of this file of data. So all the data contained in the 'FlatTerrain.csv' is from when the 
+    # robot was on flat terrain. Flat terrrain data is target number 0. Same appraoch for all collected data below.
+    # 'dataHandler()' formats the csv data, appends that to the combined data arrays which are returned.
     labelNumber = 0
     csvFileName = 'FlatTerrainData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
@@ -230,14 +238,18 @@ def main():
     #plt.figure(8)
     #plt.plot(train_data)
 
+    # Data arrays need to be reshaped to fit the NN model. The datasets are multidimensional arrays, with the arrays within the
+    # main array, length 50 samples.
     numSections = int(len(train_data)/50)
     train_data = np.reshape(train_data,(numSections,50))
 
     numSections = int(len(test_data)/50)
     test_data = np.reshape(test_data,(numSections, 50))
 
+    # 'trainingAlgorithm' function called which is where NN will be trained
     trainingAlgorithm(train_data, train_labels, test_data, test_labels)
 
+    # Used to display plots created in the code
     plt.show()
 
 if __name__== "__main__":
