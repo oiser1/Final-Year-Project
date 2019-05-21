@@ -8,10 +8,17 @@ import numpy as np
 #import pandas as pd
 import random
 
+# Data handler function takes all data from csv files and converts it to data to be inputted
+# into the neural network.
 def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels):
     # Creates lists
     leftWhisk = []
     rightWhisk = []
+    # Opens desired csv file in read mode, and calls it TrainingData.
+    # Iterates through each row of csv file and converts both values on
+    # that row to ints. The first value is appended to the left whisker
+    # data list and the second value is appended to the right whisker data
+    # list.
     with open(csvFileName, mode='r') as TrainingData:
         TrainingDataReader = csv.reader(TrainingData, delimiter=',')
         for row in TrainingDataReader:
@@ -21,17 +28,20 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
             rightWhisk.append(row[1])
 
     leftWhisk = np.asarray(leftWhisk) # Converts list to array
-    rightWhisk = np.asarray(rightWhisk)
-    leftWhisk = leftWhisk/1023 # Scales data down to 0-1
-    rightWhisk = rightWhisk/1023
+    rightWhisk = np.asarray(rightWhisk) # Converts list to array
+    leftWhisk = leftWhisk/1023 # Scales data from 0-1023 down to 0-1
+    rightWhisk = rightWhisk/1023 # Scales data from 0-1023 down to 0-1
 
+    # Create two empty arrays which will hold formatted whisker data and labels
     myTrainData = np.array([])
     myTrainLabels = np.array([])
+    # Labels are identifed as a list (0->3) for labelling the graphs below
     class_names = ['Flat Terrain', 'Rough Terrain', 'Wall', 'Object Twang']
 
+    # Create two empty arrays to hold the test data and labels
     myTestData = np.array([])
     myTestLabels = np.array([])
-    testPercent = 10 # %
+    testPercent = 10 # % of entire data which is test data
 
     appendFlag = 1
     i = 0
@@ -96,16 +106,19 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     print(len(myTestData))
     '''
     '''
+    # Plots figures for each target for observation purposes
     plt.figure(num=labelNumber+1, figsize=(10,10))
     for k in range(16):
         plt.subplot(4,4,k+1)
         plt.ylim (-1,1)
         #thisPlot.set_autoscaley_on(False)
-        plt.plot(myTrainData[k+random.randint(0,200)])
+        plt.plot(myTrainData[k+random.randint(0,200)]) # Takes random section of data to be plotted
         #plt.plot(myTrainData[k])
         plt.xlabel(class_names[myTrainLabels[k]])
       '''
     #plt.show()
+    # Following lines append training/testing data/labels from the current 
+    # csv file to the arrays to be returned to the main function
     train_data = np.append(train_data, myTrainData)
     train_labels = np.append(train_labels, myTrainLabels)
     test_data = np.append(test_data, myTestData)
@@ -131,17 +144,29 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     #model.add(keras.layers.Dense(17, activation=tf.nn.relu))
     model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
 
+    # Optimizer's parameters are altered here
     opt = keras.optimizers.Adam(lr=0.002)
     model.compile(
-        optimizer=opt,
-        loss='sparse_categorical_crossentropy', # loss is 
-        metrics=['accuracy']
+        optimizer=opt,  # Optimizer set here
+        loss='sparse_categorical_crossentropy', # Loss function for this NN
+        metrics=['accuracy']    # Accuracy of neural network shown during training 
     )
-
+    # Training of the model with training data and labels. Number of epochs are set, data is shuffled
+    # after each epoch and validation data is set
     model.fit(train_data, train_labels, epochs=1, shuffle=True, validation_split=0.05)
 
-    model.evaluate(test_data, test_labels, batch_size=32)
+    model.evaluate(test_data, test_labels, batch_size=32) # Evaluates model with test data
 
+    model.save('MLRobot.h5') # Saves the model in the file MLRobot.h5 which can be read by Tensorflow Keras
+    '''
+    input_arr = test_data[0]
+    #myData = myData.T
+    input_arr = np.expand_dims(input_arr, axis=0)
+    predictions = model.predict(input_arr) 
+    print(predictions)
+    print(input_arr.shape)
+    print(np.argmax(model.predict(input_arr)))
+    
     weights = model.layers[0].get_weights()[0]
     biases = model.layers[0].get_weights()[1]
     np.save('Layer0Weights.npy', weights)
@@ -151,7 +176,7 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     biases = model.layers[1].get_weights()[1]
     np.save('Layer1Weights.npy', weights)
     np.save('Layer1Biases.npy', biases)
-    '''weights = model.layers[2].get_weights()[0]
+    weights = model.layers[2].get_weights()[0]
     biases = model.layers[2].get_weights()[1]
     np.save('Layer2Weights.npy', weights)
     np.save('Layer2Biases.npy', biases)'''
