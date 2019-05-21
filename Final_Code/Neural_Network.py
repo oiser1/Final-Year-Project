@@ -42,7 +42,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     myTestData = np.array([])
     myTestLabels = np.array([])
 
-    testPercent = 10        # % of entire data which is test data
+    testPercent = 5         # % of entire data which is test data
     trainDataCounter = 0    # Used to count number of 50 sample sections are being added to 'myTrainData'
     appendFlag = 1          # Flag which 
     i = 0                   # 
@@ -52,7 +52,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     # Loop to take all data from left whisker and append it to 
     while appendFlag == 1:
         whiskSection = leftWhisk[i:i+50]    # 
-        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
+        #whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
         # When counter increases to equal 100/testPercent (10%, 1 in 10), appends data to 'myTestData'
         if (trainDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])   # Appends the selected 50 data samples to 'myTestData'
@@ -78,7 +78,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     # Loop to take all data from right whisker and append it to 
     while appendFlag == 1:
         whiskSection = rightWhisk[i:i+50]
-        whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
+        #whiskSection = (whiskSection - whiskSection.min())/(whiskSection.max() - whiskSection.min()) # Normalises data section
         if (trainDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])
             myTestLabels = np.append(myTestLabels,labelNumber)
@@ -144,15 +144,18 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     # followed by the activation function, and if it is the first layer of 
     # the network, the input dimmensions defined.
     model = keras.Sequential()
-    model.add(keras.layers.Dense(20, activation=tf.nn.relu, input_dim=50))
+    model.add(keras.layers.Dense(24, activation=tf.nn.relu, input_dim=50))
+    #model.add(keras.layers.GaussianNoise(0.3))
     #model.add(keras.layers.BatchNormalization())
-    #model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.Dense(10, activation=tf.nn.relu))
+    model.add(keras.layers.Dropout(0.3))
+    #model.add(keras.layers.Dense(8, activation=tf.nn.relu))
+    #model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.Dropout(0.5))
     #model.add(keras.layers.Dense(17, activation=tf.nn.relu))
     model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
 
     # Optimizer's parameters are altered here. 
-    opt = keras.optimizers.Adam(lr=0.002)
+    opt = keras.optimizers.Nadam()
     model.compile(
         optimizer=opt,  # Optimizer set here
         loss='sparse_categorical_crossentropy', # Loss function for this NN. The number the NN is trying to decrease
@@ -160,11 +163,30 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     )
     # Training of the model with training data and labels. Number of epochs are set, data is shuffled
     # after each epoch and validation data is set
-    model.fit(train_data, train_labels, epochs=1, shuffle=True, validation_split=0.05)
+    myHistory = model.fit(train_data, train_labels, epochs=200, shuffle=True, validation_split=0.05)
 
     model.evaluate(test_data, test_labels, batch_size=32) # Evaluates model with test data
 
     model.save('MLRobot.h5') # Saves the model in the file MLRobot.h5 which can be read by Tensorflow Keras
+
+    # Plots validation and training accuracy
+    plt.figure(0)
+    plt.plot(myHistory.history['acc'])
+    plt.plot(myHistory.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    #plt.show()
+    # Plots validation and training loss
+    plt.figure(1)
+    plt.plot(myHistory.history['loss'])
+    plt.plot(myHistory.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    #plt.show()
     '''
     input_arr = test_data[0]
     #myData = myData.T
