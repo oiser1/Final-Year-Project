@@ -11,12 +11,60 @@ import csv
 import re
 #import bluetooth
 import tensorflow as tf
+from tensorflow import keras
 import RPi.GPIO as GPIO
 import lcd
 import numpy as np
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+import Adafruit_SSD1306
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+
+import subprocess
+
+global graph,model
+graph = tf.get_default_graph()
+
+robotModel = tf.keras.models.load_model('MLRobot.h5')
 ####################### Setup #########################################################
+RST = None     # on the PiOLED this pin isnt used
+# 128x64 display with hardware I2C:
+disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
+# Initialize library.
+disp.begin()
+
+# Clear display.
+disp.clear()
+disp.display()
+
+# Create blank image for drawing.
+# Make sure to create image with mode '1' for 1-bit color.
+width = disp.width
+height = disp.height
+image = Image.new('1', (width, height))
+
+# Get drawing object to draw on image.
+draw = ImageDraw.Draw(image)
+
+# Draw a black filled box to clear the image.
+draw.rectangle((0,0,width,height), outline=0, fill=0)
+
+# Draw some shapes.
+# First define some constants to allow easy resizing of shapes.
+padding = -2
+top = padding
+bottom = height-padding
+# Move left to right keeping track of the current x position for drawing shapes.
+x = 0
+
+
+# Load default font.
+font = ImageFont.load_default()
+    
 ser = serial.Serial('/dev/ttyAMA0',2000000) # Opens serial port at baud rate of 2000000
 ser.flushInput()
 ser.flushOutput()
@@ -102,45 +150,68 @@ def getData():
 
         leftWhiskArr = np.append(leftWhiskArr,read_serial1)
         rightWhiskArr = np.append(rightWhiskArr, read_serial2)
-        numSamples=numSamples+1
+        #numSamples=numSamples+1
         
-        if (numSamples >= 50):
-            leftWhiskArr = np.expand_dims(leftWhiskArr, axis=0)
-            rightWhiksArr = np.expand_dims(rightWhiskArr, axis=0)
+        if (len(leftWhiskArr) == 50):
+            print("Hello1")
             leftWhiskResult=deployNN(leftWhiskArr)
             rightWhiskResult=deployNN(rightWhiskArr)
             displayNNResult(leftWhiskResult,rightWhiskResult)
-            numSamples = 0
+            #numSamples = 0
             leftWhiskArr = np.array([])
             rightWhiskArr = np.array([])
+            print("Hello4")
             
                 
 
     return;
 
 def displayNNResult(leftWhiskResult, rightWhiskResult):
-    lcd.lcd_init()
-    # set cursor to line 1
-    lcd.lcd_byte(lcd.LCD_LINE_1, lcd.LCD_CMD)
-    # display text centered on line 1
-    lcd.lcd_string("Left whisker:", 2)
-    # set cursor to line 2
-    lcd.lcd_byte(lcd.LCD_LINE_2, lcd.LCD_CMD)
-    # display text centered on line 2
-    lcd.lcd_string(leftWhiskOut, 2)
+    print("Hello3.1")
+    
 
-    # set cursor to line 4
-    lcd.lcd_byte(lcd.LCD_LINE_4, lcd.LCD_CMD)
-    # display additional text on line 4
-    lcd.lcd_string("Right whisker:", 2)
-    # set cursor to line 5
-    lcd.lcd_byte(lcd.LCD_LINE_2, lcd.LCD_CMD)
-    # display text centered on line 5
-    lcd.lcd_string(rightWhiskOut, 2)
+    # Draw a black filled box to clear the image.
+    draw.rectangle((0,0,width,height), outline=0, fill=0)
+
+    # 
+    if (leftWhiskResult == 0):
+        leftWhiskString = 'Flat Terrain'
+    elif (leftWhiskResult == 1):
+        leftWhiskString = 'Rough Terrain'
+    elif (leftWhiskResult == 2):
+        leftWhiskString = 'Wall'
+    else:
+        leftWhiskString = 'Object Twang'
+        
+    if (rightWhiskResult == 0):
+        rightWhiskString = 'Flat Terrain'
+    elif (rightWhiskResult == 1):
+        rightWhiskString = 'Rough Terrain'
+    elif (rightWhiskResult == 2):
+        rightWhiskString = 'Wall'
+    else:
+        rightWhiskString = 'Object Twang'
+
+    draw.text((x, top),       "Left Whisker: ",  font=font, fill=255)
+    draw.text((x, top+8),       leftWhiskString,  font=font, fill=255)
+    draw.text((x, top+24),       "Right Whisker: ",  font=font, fill=255)
+    draw.text((x, top+32),       rightWhiskString,  font=font, fill=255)
+
+    # Display image.
+    disp.image(image)
+    disp.display()
+    print("Hello3.2")
+    return;
 
 def deployNN(whiskData):
-    robotModel = tf.keras.models.load_model('MLRobot.h5')
-    result = np.argmax(robotModel.predict(whiskData))
+    print("Hello2.1")
+    whiskData = np.expand_dims(whiskData, axis=0)
+    print("Hello2.2")
+    with graph.as_default():
+        prediction = robotModel.predict(whiskData)
+    result = np.argmax(prediction)
+    #result = np.argmax(robotModel.predict(whiskData))
+    print(result)
     
     return result;
 
