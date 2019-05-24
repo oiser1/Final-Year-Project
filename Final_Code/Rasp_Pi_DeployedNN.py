@@ -1,29 +1,23 @@
 # Socket object documentation can be found in btmodule.c in bluez folder
 # inside PyBluez-0.20. Check bluez.py for implementation of socket object
 
-# Imports serial, time, _thread, csv and bluetooth libraries
+# Imports the following libraries
 import serial
 import time
 from bluetooth import *
 import _thread
-#import threading
 import csv
 import re
-#import bluetooth
 import tensorflow as tf
 from tensorflow import keras
 import RPi.GPIO as GPIO
-#import lcd
 import numpy as np
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 import Adafruit_SSD1306
-
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
-
 import subprocess
 
 global graph,model
@@ -83,16 +77,6 @@ myPhone_sock, myPhone_addr = raspPi_sock.accept()
 print ("Accepted connection from ", myPhone_addr)
 ############################################################################################
 
-#class phoneThread(threading.Thread):
-#    def __init__(self, threadID, name, myPhone_sock):
-#        threading.Thread.__init__(self)
-#        self.threadID = threadID
-#        self.name = name
-#        self.myPhone_sock = myPhone_sock
-#    def run(self):
-#        threadLock.acquire()
-#        phoneInstr(myPhone_sock)
-#    
 def phoneInstr(myPhone_sock):
     global myError
     while True:
@@ -215,7 +199,6 @@ def deployNN(whiskData):
     print(result)
     
     return result;
-
 
 def main():
     _thread.start_new_thread(phoneInstr, (myPhone_sock,)) # New thread started for phoneInstr function

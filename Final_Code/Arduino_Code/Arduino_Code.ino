@@ -1,5 +1,8 @@
-//Code written by Oisin Walsh. Last edit made 21/05/2019
-// Includes code from Arduino Website
+// Code written by Oisin Walsh as part of a bachelor thesis in TU Dublin. 
+// Last edit made 24/05/2019
+// Some of the code in this program was taken from the following link and modified
+// to suit the purposes of this program: https://www.arduino.cc/reference/en/
+
 // Analog input pins are initialised with relevant names of type int
 int IR_Sensor_LeftWhisk = A0;
 int IR_Sensor_RightWhisk = A1;
