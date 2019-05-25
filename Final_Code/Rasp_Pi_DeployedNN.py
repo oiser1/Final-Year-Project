@@ -23,7 +23,8 @@ import subprocess
 global graph,model
 graph = tf.get_default_graph()
 
-robotModel = tf.keras.models.load_model('MLRobot.h5')
+robotModel = tf.keras.models.load_model('MLRobot4Classes.h5')
+#robotModel = tf.keras.models.load_model('MLRobotBinClass.h5')
 ####################### Setup #########################################################
 RST = None     # on the PiOLED this pin isnt used
 # 128x64 display with hardware I2C:
@@ -160,8 +161,10 @@ def displayNNResult(leftWhiskResult, rightWhiskResult):
     # 
     if (leftWhiskResult == 0):
         leftWhiskString = 'Flat Terrain'
+        #leftWhiskString = 'No Contact'
     elif (leftWhiskResult == 1):
         leftWhiskString = 'Rough Terrain'
+        #leftWhiskString = 'Contact'
     elif (leftWhiskResult == 2):
         leftWhiskString = 'Wall'
     else:
@@ -169,8 +172,10 @@ def displayNNResult(leftWhiskResult, rightWhiskResult):
         
     if (rightWhiskResult == 0):
         rightWhiskString = 'Flat Terrain'
+        #rightWhiskString = 'No Contact'
     elif (rightWhiskResult == 1):
         rightWhiskString = 'Rough Terrain'
+        #rightWhiskString = 'Contact'
     elif (rightWhiskResult == 2):
         rightWhiskString = 'Wall'
     else:
@@ -195,7 +200,8 @@ def deployNN(whiskData):
     with graph.as_default():
         prediction = robotModel.predict(whiskData)
     result = np.argmax(prediction)
-    #result = np.argmax(robotModel.predict(whiskData))
+    #result = int(np.round(prediction))
+
     print(result)
     
     return result;
