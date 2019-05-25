@@ -1,5 +1,5 @@
-# Tensorflow tutorial was used. https://www.tensorflow.org/tutorials/keras/basic_classification#explore_the_data
-# https://keras.io/
+# TensorFlow tutorial was used. https://www.tensorflow.org/tutorials/keras/basic_classification#explore_the_data
+# Keras Documentation: https://keras.io/
 import tensorflow as tf
 from tensorflow import keras
 import csv
@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 #import pandas as pd
 import random
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # Disables a warning from TensorFlow
 
 # Data handler function takes all data from csv files and converts it to data to be inputted
 # into the neural network.
@@ -57,7 +59,7 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
         if (trainDataCounter >= (100/testPercent)):
             myTestData = np.append(myTestData,[whiskSection])   # Appends the selected 50 data samples to 'myTestData'
             myTestLabels = np.append(myTestLabels,labelNumber)  # Appends the label for the current target data to 'myTestLabels'
-            trainDataCounter = 0 # increases 'trainDataCounter'
+            trainDataCounter = 0 # resets 'trainDataCounter'
             m+=1    # increases m counter
 
         # Otherwise data is appended to 'myTrainData'
@@ -108,18 +110,18 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
     print(len(myTrainData))
     print(len(myTestData))
     '''
-    '''
+    
     # Plots figures for each target for observation of recorded data
     plt.figure(num=labelNumber+1, figsize=(10,10))
-    for k in range(16):
-        plt.subplot(4,4,k+1)
-        plt.ylim (-1,1)
+    for k in range(8):
+        plt.subplot(2,4,k+1)
+        plt.ylim (0,1)
         #thisPlot.set_autoscaley_on(False)
         plt.plot(myTrainData[k+random.randint(0,200)]) # Takes random section of data to be plotted
         #plt.plot(myTrainData[k])
         plt.xlabel(class_names[myTrainLabels[k]])
-      '''
 
+    plt.show()
     # Following lines append training/testing data/labels from the current 
     # csv file to the arrays to be returned to the main function
     train_data = np.append(train_data, myTrainData)
@@ -130,63 +132,69 @@ def dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, t
 
 
 def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
-    '''model = keras.Sequential([
-    #keras.layers.Flatten(input_shape=(50,1)),
-    keras.layers.Dense(20, activation=tf.nn.relu),
-    #keras.layers.Dense(20, activation=tf.nn.relu),
-    keras.layers.Dense(8, activation=tf.nn.relu),
-    #keras.layers.Dense(10, activation=tf.nn.relu),
-    keras.layers.Dense(4, activation=tf.nn.softmax)
-    ])'''
     # Creates a Keras Sequential model, which is an ordinary Artificial Neural
     # Network with Dense layers (regular connected layer). 'model.add' adds a new
     # layer to the network, where the number of nodes in the layer is first defined
     # followed by the activation function, and if it is the first layer of 
     # the network, the input dimmensions defined.
-    model = keras.Sequential()
-    model.add(keras.layers.Dense(24, activation=tf.nn.relu, input_dim=50))
-    #model.add(keras.layers.GaussianNoise(0.3))
-    #model.add(keras.layers.BatchNormalization())
-    model.add(keras.layers.Dropout(0.3))
-    #model.add(keras.layers.Dense(8, activation=tf.nn.relu))
-    #model.add(keras.layers.BatchNormalization())
-    #model.add(keras.layers.Dropout(0.5))
-    #model.add(keras.layers.Dense(17, activation=tf.nn.relu))
-    model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
+    for i in range(0,1):
+        model = keras.Sequential()
+        model.add(keras.layers.Dense(28, activation=tf.nn.relu, input_dim=50))
+        #model.add(keras.layers.GaussianNoise(0.3))
+        #model.add(keras.layers.BatchNormalization())
+        #model.add(keras.layers.Dropout(0.3))
+        model.add(keras.layers.Dense(28, activation=tf.nn.relu))
+        #model.add(keras.layers.BatchNormalization())
+        #model.add(keras.layers.Dropout(0.5))
+        #model.add(keras.layers.Dense(12, activation=tf.nn.relu))
+        model.add(keras.layers.Dense(12, activation=tf.nn.relu))
 
-    # Optimizer's parameters are altered here. 
-    opt = keras.optimizers.Nadam()
-    model.compile(
-        optimizer=opt,  # Optimizer set here
-        loss='sparse_categorical_crossentropy', # Loss function for this NN. The number the NN is trying to decrease
-        metrics=['accuracy']    # Accuracy of neural network shown during training 
-    )
-    # Training of the model with training data and labels. Number of epochs are set, data is shuffled
-    # after each epoch and validation data is set
-    myHistory = model.fit(train_data, train_labels, epochs=200, shuffle=True, validation_split=0.05)
+        model.add(keras.layers.Dense(4, activation=tf.nn.softmax))
+        #model.add(keras.layers.Dense(1, activation=tf.nn.sigmoid))
 
-    model.evaluate(test_data, test_labels, batch_size=32) # Evaluates model with test data
 
-    model.save('MLRobot.h5') # Saves the model in the file MLRobot.h5 which can be read by Tensorflow Keras
+        # Optimizer's parameters are altered here. 
+        opt = keras.optimizers.Nadam()
+        model.compile(
+            optimizer=opt,  # Optimizer set here
+            loss='sparse_categorical_crossentropy', # Loss function for this NN. The number the NN is trying to decrease
+            #loss='binary_crossentropy',
+            metrics=['accuracy']    # Accuracy of neural network shown during training 
+        )
+        # Training of the model with training data and labels. Number of epochs are set, data is shuffled
+        # after each epoch and validation data is set
+        myHistory = model.fit(train_data, train_labels, epochs=1, shuffle=True, validation_data=(test_data, test_labels))
 
-    # Plots validation and training accuracy
-    plt.figure(0)
-    plt.plot(myHistory.history['acc'])
-    plt.plot(myHistory.history['val_acc'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
+        model.evaluate(test_data, test_labels, batch_size=32) # Evaluates model with test data
+        '''
+        if model.loss() >= 
+            bestTrainModel =
+            bestValidModel =
+            bestTestModel =
+        '''
+        model.save('MLRobot.h5') # Saves the model in the file MLRobot.h5 which can be read by Tensorflow Keras API
+
+        # Plots validation and training accuracy
+        plt.figure(i)
+        plt.subplot(2,1,1)
+        plt.plot(myHistory.history['acc'])
+        plt.plot(myHistory.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'validation'], loc='upper left')
+        #plt.show()
+        # Plots validation and training loss
+        #plt.figure(1)
+        plt.subplot(2,1,2)
+        plt.plot(myHistory.history['loss'])
+        plt.plot(myHistory.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'validation'], loc='upper left')
     #plt.show()
-    # Plots validation and training loss
-    plt.figure(1)
-    plt.plot(myHistory.history['loss'])
-    plt.plot(myHistory.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    #plt.show()
+    
     '''
     input_arr = test_data[0]
     #myData = myData.T
@@ -195,34 +203,12 @@ def trainingAlgorithm(train_data, train_labels, test_data, test_labels):
     print(predictions)
     print(input_arr.shape)
     print(np.argmax(model.predict(input_arr)))
-    
-    weights = model.layers[0].get_weights()[0]
-    biases = model.layers[0].get_weights()[1]
-    np.save('Layer0Weights.npy', weights)
-    np.save('Layer0Biases.npy', biases)
-    #loaded = np.load('Layer0Weights.npy')
-    weights = model.layers[1].get_weights()[0]
-    biases = model.layers[1].get_weights()[1]
-    np.save('Layer1Weights.npy', weights)
-    np.save('Layer1Biases.npy', biases)
-    weights = model.layers[2].get_weights()[0]
-    biases = model.layers[2].get_weights()[1]
-    np.save('Layer2Weights.npy', weights)
-    np.save('Layer2Biases.npy', biases)'''
 
-    #print("Weights", weights)
-    #print("Loaded Weights", loaded)
-    #print("Biases", biases)
-
-    
-
-    #print("Weights", weights)
-    #print("Biases", biases)
     #predictions = model.predict(test_data)
     #x = random.randint(0,248)
     #print(np.argmax(predictions[x]))
     #print(test_labels[x])
-
+    '''
 
 
 
@@ -243,18 +229,21 @@ def main():
     #plt.plot(train_data)
 
     labelNumber = 1
+    #labelNumber = 0 # For binary classification, now two classes (targets), 'contact' and 'no contact'
     csvFileName = 'RoughTerrainData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
     #plt.figure(6)
     #plt.plot(train_data)
 
     labelNumber = 2
+    #labelNumber = 1
     csvFileName = 'WallData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
     #plt.figure(7)
     #plt.plot(train_data)
 
     labelNumber = 3
+    #labelNumber = 1
     csvFileName = 'ObjectTwangData.csv'
     train_data, train_labels, test_data, test_labels = dataHandler(labelNumber, csvFileName, train_data, train_labels, test_data, test_labels)
     #plt.figure(8)
